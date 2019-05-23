@@ -35,9 +35,7 @@ func Test_newRouter(t *testing.T) {
 
 func Test_AddRoute(t *testing.T) {
 	router, _ := newRouter()
-	calledback := false
 	cb := func(client Client, msg Message) {
-		calledback = true
 	}
 	router.addRoute("/alpha", cb)
 
@@ -271,8 +269,7 @@ func Test_MatchAndDispatch(t *testing.T) {
 	router, stopper := newRouter()
 	router.addRoute("a", cb)
 
-	router.matchAndDispatch(msgs, true, nil)
-
+	router.matchAndDispatch(msgs, true, &client{oboundP: make(chan *PacketAndToken, 100)})
 	msgs <- pub
 
 	<-calledback
@@ -304,7 +301,7 @@ func Test_SharedSubscription_MatchAndDispatch(t *testing.T) {
 	router, stopper := newRouter()
 	router.addRoute("$share/az1/a", cb)
 
-	router.matchAndDispatch(msgs, true, nil)
+	router.matchAndDispatch(msgs, true, &client{oboundP: make(chan *PacketAndToken, 100)})
 
 	msgs <- pub
 

@@ -1018,11 +1018,12 @@ func Test_cleanUpMids(t *testing.T) {
 	}
 
 	token := c.Publish("/test/cleanUP", 2, false, "cleanup test")
-	time.Sleep(10 * time.Millisecond)
+	c.(*client).messageIds.Lock()
 	fmt.Println("Breaking connection", len(c.(*client).messageIds.index))
 	if len(c.(*client).messageIds.index) == 0 {
 		t.Fatalf("Should be a token in the messageIDs, none found")
 	}
+	c.(*client).messageIds.Unlock()
 	c.(*client).internalConnLost(fmt.Errorf("cleanup test"))
 
 	time.Sleep(5 * time.Second)
@@ -1030,9 +1031,12 @@ func Test_cleanUpMids(t *testing.T) {
 		t.Fail()
 	}
 
+	c.(*client).messageIds.Lock()
 	if len(c.(*client).messageIds.index) > 0 {
 		t.Fatalf("Should have cleaned up messageIDs, have %d left", len(c.(*client).messageIds.index))
 	}
+	c.(*client).messageIds.Unlock()
+
 	if token.Error() == nil {
 		t.Fatal("token should have received an error on connection loss")
 	}
