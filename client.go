@@ -511,6 +511,10 @@ func (c *client) internalConnLost(err error) {
 			go c.reconnect()
 		} else {
 			c.setConnected(disconnected)
+
+			//if we are not auto-reconnecting then close the router because
+			//a new one will be spawned when Connect() is called again.
+			c.closeStopRouter()
 		}
 		if c.options.OnConnectionLost != nil {
 			go c.options.OnConnectionLost(c, err)
